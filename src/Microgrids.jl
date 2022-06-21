@@ -26,4 +26,17 @@ function simulate(mg::Microgrid)
     return (opervarstraj = opervarstraj, opervarsaggr = opervarsaggr, costs = costs)
 end
 
+function simulate(mg::Microgrid,ε)
+    # Run the microgrid operation
+    opervarstraj = operation(mg)
+
+    # Aggregate the operation variables
+    opervarsaggr = aggregation(mg, opervarstraj,ε)
+
+    # Eval the microgrid costs
+    costs = economics(mg, opervarsaggr)
+
+    return (opervarstraj = opervarstraj, opervarsaggr = opervarsaggr, costs = costs)
+end
+
 end
