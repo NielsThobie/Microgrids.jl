@@ -268,9 +268,17 @@ function economics(mg::Microgrid, opervarsaggr::OperVarsAggr)
     # NonDispatchables costs
     for i=1:length(mg.nondispatchables)
         if (typeof(mg.nondispatchables[i]) == Photovoltaic) || (typeof(mg.nondispatchables[i]) == PVInverter)
-            PV_total_cost, PV_investment_cost, PV_om_cost, PV_replacement_cost, PV_salvage_cost = annual_costs(mg.nondispatchables[i], mg.project)
+            PV_total_cost += annual_costs(mg.nondispatchables[i], mg.project)[1]
+            PV_replacement_cost += annual_costs(mg.nondispatchables[i], mg.project)[2]
+            PV_om_cost += annual_costs(mg.nondispatchables[i], mg.project)[3]
+            PV_replacement_cost+= annual_costs(mg.nondispatchables[i], mg.project)[4]
+            PV_salvage_cost += annual_costs(mg.nondispatchables[i], mg.project)[5]
         elseif typeof(mg.nondispatchables[i]) == WindPower
-            WT_total_cost, WT_investment_cost, WT_om_cost, WT_replacement_cost, WT_salvage_cost = annual_costs(mg.nondispatchables[i], mg.project)
+            WT_total_cost += annual_costs(mg.nondispatchables[i], mg.project)[1]
+            WT_investment_cost += annual_costs(mg.nondispatchables[i], mg.project)[2]
+            WT_om_cost += annual_costs(mg.nondispatchables[i], mg.project)[3]
+            WT_replacement_cost += annual_costs(mg.nondispatchables[i], mg.project)[4]
+            WT_salvage_cost += annual_costs(mg.nondispatchables[i], mg.project)[5]
         end
     end
 

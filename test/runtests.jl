@@ -94,6 +94,7 @@ end
     @test annual_costs(pvi, proj0) == [15275.0,8750.0,4375.0,8750.0, 6600.0]
 end
 
+
 @testset "Economics: Battery" begin
     lifetime_mg = 25 # just a bit more than the battery
     proj0 = Project(lifetime_mg, 0.00, 1.) # no discount
@@ -188,6 +189,73 @@ end
     # NPC validations
     @test round(costs0.npc/1e6; digits=3) == 41.697 # M$, without discount
     @test round(costs5.npc/1e6; digits=3) == 28.353 # M$, with 5% discount
+    # TODO: test LCOE
+
+end
+
+@testset "Economics: MG with 2 PVInverter" begin
+    Pload = [1., 1., 1.]
+    
+    lifetime_mg = 30
+    proj0 = Project(lifetime_mg, 0.00, 1.) 
+
+    power_rated_PV = 5 #kW
+    ILR = 1.5
+    derating_factor = 0.9
+    irradiance = [0, 0.5, 1.0]
+    investiment_cost_inverter = 100.
+    om_cost_inverter = 10/6 
+    replacement_cost_inverter = 100.
+    salvage_cost_inverter = 100.
+    lifetime_inverter = 15
+    investiment_cost_panel = 1200. - investiment_cost_inverter
+    om_cost_panel = 20. - om_cost_inverter
+    replacement_cost_panel = 1200. - replacement_cost_inverter
+    salvage_cost_panel = 1200. - salvage_cost_inverter
+    lifetime_panel = 25
+
+    pv1 = PVInverter(power_rated_PV,ILR,derating_factor,irradiance,investiment_cost_inverter,
+                    om_cost_inverter,replacement_cost_inverter,salvage_cost_inverter,lifetime_inverter,investiment_cost_panel,
+                    om_cost_panel,replacement_cost_panel,salvage_cost_panel,lifetime_panel)
+
+    pv2 = PVInverter(power_rated_PV,ILR,derating_factor,irradiance,investiment_cost_inverter,
+                    om_cost_inverter,replacement_cost_inverter,salvage_cost_inverter,lifetime_inverter,investiment_cost_panel,
+                    om_cost_panel,replacement_cost_panel,salvage_cost_panel,lifetime_panel)
+
+    energy_initial = 0.
+    energy_max = 9000
+    energy_min = 0
+    power_min = -1.0*energy_max
+    power_max = +1.0*energy_max
+    loss = 0.05
+    investiment_cost_BT = 350.
+    om_cost_BT = 10.
+    replacement_cost_BT = 350.
+    salvage_cost_BT = 350.
+    lifetime_BT = 15
+    lifetime_thrpt = 3000
+
+    battery = Battery(energy_initial, energy_max, energy_min, power_min, power_max, loss, investiment_cost_BT, om_cost_BT, replacement_cost_BT, salvage_cost_BT, lifetime_BT, lifetime_thrpt)
+
+    power_rated_DG = 1800.
+    min_load_ratio = 0
+    F0 = 0.0
+    F1 = 0.240
+    fuel_cost = 1.
+    investiment_cost_DG = 400.
+    om_cost_DG = 0.02
+    replacement_cost_DG = 400.
+    salvage_cost_DG = 400.
+    lifetime_DG = 15000
+
+    dieselgenerator = DieselGenerator(power_rated_DG, min_load_ratio, F0, F1, fuel_cost, investiment_cost_DG, om_cost_DG, replacement_cost_DG, salvage_cost_DG, lifetime_DG)
+
+    mg0 = Microgrid(proj0, Pload, dieselgenerator, battery, [pv1,pv2]);
+
+
+    traj0,aggr0,costs0 = simulate(mg0)
+    # NPC validations
+    @test round(costs0.npc/1e6; digits=3) == 9.033 # M$, without discount
     # TODO: test LCOE
 
 end
